@@ -1,0 +1,26 @@
+Category 1: “sum”, “difference”, “product”, “quotient”, “multiply”, “add”, “subtract”, “square”, “square root”, “cube”, etc.
+In this case, the group of tokens obtained after parsing gets arranged in the order {operator, operand_1, [operand_2]}. The popped sequence looks like {[operand_2], operand_1, operator}, and must be evaluated as {operand_1 operator [operand_2]}.
+After the popped sequence is evaluated, the next operator token in the input is pushed into the stack before the evaluated value from before is pushed.
+Category 2: “plus”, “minus”, “times”, “divided by”, “multiplied by”, “to the power of”, “added to”, “subtracted from”, etc. 
+In this case, the group of tokens obtained after parsing gets arranged in the order {operand_1, operator, operand_2}. The popped sequence looks like {operand_2, operator, operand_1}, and must be evaluated as {operand_1 operator operand_2}, except in some cases such as when the operator token is “subtracted from”, when the popped sequence should be evaluated as {operand_2 operator operand_1}.
+After the popped sequence is evaluated, the next operator token in the input is pushed into the stack after the evaluated value from before is pushed.
+In general, one of the basic approaches to dealing with the problem of this project that we are aware of as of now can be illustrated by the following steps:
+    1. Obtain input string.
+    2. Split input string into words based on the delimiters whitespace, comma, full stop (except if used as a decimal place marker), question mark, semicolon and colon, and push the resulting “words” into a list. Let us call this list, word_list. Remove capitalisation of words if any from word_list. A predefined list of valid operator tokens exists. We shall call it token_list. We shall maintain an empty list called tokens_found. 
+    3. Let i denote a word in word_list, and let i+1 denote the word succeeding i in word_list. For i in word_list:
+If the string [i + white space + (i+1)] is found in token_list:
+		Add [i + white space + (i+1)] to tokens_found.
+Else, if i is found in token_list:
+		Add i to tokens_found.
+Else, if i is a number (integer or floating point):
+		Add i to tokens_found. 
+    4. Let us maintain two stacks: main_stack and eval_stack. Again, consider i to be a word in tokens_found. i-1 and i+1 are the words preceding and succeeding i in token_found respectively. For i in tokens_found, push i into main_stack one by one and do the following:
+If i is a number, i-1 is a number and i-2 is an operator token of category 1 (described earlier), and (i+1) is any operator token:
+		Pop all tokens in main_stack and push them into eval_stack. 
+Evaluate the value held by eval_stack as eval_stack[1] eval_stack[2] eval_stack[0].
+Else, if i is a number, i-1 is an operator token of category 2, and i-2 is a number, and i+1 is any operator token:
+Pop all tokens in main_stack and push them into eval_stack. Evaluate eval_stack as eval_stack[2] eval_stack[1] eval_stack[0].
+Else, if i is a number, i-1 is an operator token of category 1, and i+1 is any operator token:
+Pop all tokens in main_stack and push them into eval_stack. Evaluate eval_stack as eval_stack[1] eval_stack[0].
+If i+1 is an operator token of category 1, push i+1 into main_stack, followed by the evaluated value in eval_stack.
+Else, if i+1 is an operator token of category 2, push i+1 into main_stack after pushing the evaluated value in eval_stack into main_stack. 
